@@ -15,6 +15,7 @@ joueurs_echecs = [
     { nom: "Noah", age: 33, elo: 1930 },
     { nom: "Olivia", age: 21, elo: 2080 },
     { nom: "Patrick", age: 18, elo: 2140 },
+    { nom: "Patrick 2", age: 18, elo: 2140 },
     { nom: "Quinn", age: 34, elo: 1900 },
     { nom: "Rachel", age: 35, elo: 1870 },
     { nom: "Samuel", age: 36, elo: 1860 },
@@ -33,16 +34,18 @@ joueurs_echecs = [
 ]
 
 def get_champions(joueurs)
-    joueurs = joueurs.group_by { |joueur| joueur[:age] }.map do |age, joueurs|
-        joueurs.max_by { |joueur| joueur[:elo] }
-    end
+    joueurs_par_age = joueurs.group_by { |joueur| joueur[:age] }.map do |age, joueurs_age|
+        max_elo = joueurs_age.max_by { |joueur| joueur[:elo] }[:elo]
+        joueurs_age.select { |joueur| joueur[:elo] == max_elo }
+    end.flatten
 
-    joueurs = joueurs.group_by { |joueur| joueur[:elo] }.map do |elo, joueurs|
-        joueurs.min_by { |joueur| joueur[:age] }
-    end
+    joueurs_par_elo = joueurs_par_age.group_by { |joueur| joueur[:elo] }.map do |elo, joueurs_elo|
+        min_age = joueurs_elo.min_by { |joueur| joueur[:age] }[:age]
+        joueurs_elo.select { |joueur| joueur[:age] == min_age }
+    end.flatten
 
-    return joueurs.select do |joueur|
-        !joueurs.any? { |autre_joueur| (joueur[:elo] < autre_joueur[:elo] && joueur[:age] >= autre_joueur[:age]) || 
+    return joueurs_par_elo.select do |joueur|
+        !joueurs_par_elo.any? { |autre_joueur| (joueur[:elo] < autre_joueur[:elo] && joueur[:age] >= autre_joueur[:age]) || 
         (joueur[:age] > autre_joueur[:age] && joueur[:elo] <= autre_joueur[:elo]) }
     end
 end
